@@ -17,12 +17,41 @@
 
 ---
 
-## Installation
+## Installation & Distribution
 
-### From Distribution Wheel
+### Option 1: Install Directly from Git (Easiest for Users)
+Users don't need to build a `.whl` manually; `pip` can install it directly from the GitHub repository:
 ```bash
+pip install git+https://github.com/teomans/ttassistant.git
+```
+
+### Option 2: Install from Local Source
+If the repository is already cloned locally:
+```bash
+pip install .
+```
+
+### Option 3: Build & Install the Distribution Wheel (`.whl`)
+To produce a standalone `.whl` file for air-gapped environments or internal distribution:
+
+```bash
+# Build the wheel package into dist/
+python -c "import hatchling.build; hatchling.build.build_wheel('dist')"
+
+# Install the generated wheel
 pip install dist/ttassistant-0.1.0-py3-none-any.whl
 ```
+
+*(Note: Alternatively, using the PyPA build tool: `pip install build && python -m build --wheel`)*
+
+### Option 4: Distribute via GitHub Releases
+For teams that prefer downloading pre-built `.whl` files:
+1. Create a release tag on GitHub (e.g. `v0.1.0`).
+2. Attach the generated `dist/ttassistant-0.1.0-py3-none-any.whl` to the GitHub Release.
+3. Users can then install it directly from the release URL:
+   ```bash
+   pip install https://github.com/teomans/ttassistant/releases/download/v0.1.0/ttassistant-0.1.0-py3-none-any.whl
+   ```
 
 ### Local Development Setup
 ```bash

@@ -16,9 +16,29 @@ Welcome to `ttassistant`! This guide walks you through common developer workflow
 
 ## 1. Installation & Setup
 
-### Install Wheel Distribution
+### Option A: Install Directly from Git (Recommended)
+End users do not need to download or build `.whl` files manually. `pip` can install `ttassistant` directly from your Git repository:
+
 ```bash
+pip install git+https://github.com/teomans/ttassistant.git
+```
+
+### Option B: Build the Wheel Locally
+If users clone the repository or need an air-gapped `.whl` package:
+
+```bash
+# Build the wheel into dist/
+python -c "import hatchling.build; hatchling.build.build_wheel('dist')"
+
+# Install the built wheel
 pip install dist/ttassistant-0.1.0-py3-none-any.whl
+```
+
+### Option C: Download from GitHub Releases
+Maintainers can upload the built `ttassistant-0.1.0-py3-none-any.whl` to GitHub Releases (e.g., Release `v0.1.0`). Users can install it directly via:
+
+```bash
+pip install https://github.com/teomans/ttassistant/releases/download/v0.1.0/ttassistant-0.1.0-py3-none-any.whl
 ```
 
 ### Verify Installation
