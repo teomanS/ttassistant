@@ -1,0 +1,92 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 09-21-2026 17:24
+last_updated: 09-29-2026 11:31
+project: ttassistant
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: done
+  1-1-project-skeleton-hexagonal-architecture-typer-cli-entrypoint: done
+  1-2-dynamic-markdown-standards-engine-fail-fast-policy: done
+  1-3-guided-provisioning-dialogue-parameter-collection: done
+  1-4-standards-governed-greenfield-scaffolding-state-backend-synt: done
+  1-5-unified-terminal-diff-preview-human-confirmation-gate-atomic: done
+  epic-1-retrospective: done
+
+  epic-2: done
+  2-1-monorepo-topology-traversal-lexical-candidate-indexer-phase: done
+  2-2-targeted-read-only-hcl-ast-extraction-for-networking-resourc: done
+  2-3-collaborative-subnet-selection-missing-dependency-scaffoldin: done
+  2-4-decoupled-data-source-generator: done
+  epic-2-retrospective: done
+
+  epic-3: done
+  3-1-bundled-offline-azurerm-provider-schema-catalog: done
+  3-2-tier-1-paas-scaffolding-with-mandatory-public-network-access: done
+  3-3-automated-private-endpoint-hub-private-dns-zone-group-bundli: done
+  3-4-tier-2-universal-azure-long-tail-resource-scaffolding: done
+  epic-3-retrospective: done
+
+  epic-4: done
+  4-1-air-gapped-deterministic-tweak-engine-attribute-aliasing: done
+  4-2-interactive-tweak-loop-dynamic-diff-re-rendering: done
+  4-3-existing-folder-inspection-non-compliance-diagnostics: done
+  4-4-surgical-remediation-staging-comment-preservation: done
+  epic-4-retrospective: done
+action_items:
+  - id: "epic-1-retro-item-1-refactor-markdownstandardsadapter-into-m"
+    epic: 1
+    action: "Refactor MarkdownStandardsAdapter into modular sub-parsers"
+    owner: "developer"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-23.md"
+  - id: "epic-1-retro-item-2-add-pre-flight-cleanup-of-stale-temp-fil"
+    epic: 1
+    action: "Add pre-flight cleanup of stale temp files in DiskFileSystemAdapter"
+    owner: "developer"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-23.md"
+  - id: "epic-4-retro-item-1-package-wheel-distribution"
+    epic: 4
+    action: "Run hatch build to produce clean wheel and sdist packages for internal
+      distribution"
+    owner: "developer"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-09-28.md"
+  - id: "epic-4-retro-item-2-publish-user-documentation"
+    epic: 4
+    action: "Compile user guide and CLI reference covering ttassistant new, scan,
+      catalog, and remediate"
+    owner: "developer"
+    status: done
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-09-28.md"
+

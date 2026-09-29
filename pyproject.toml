@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ttassistant"
+version = "0.1.0"
+description = "Enterprise terminal CLI copilot for Azure Terraform development"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "typer>=0.12.5",
+    "rich>=13.7.0",
+    "questionary>=2.0.1",
+    "pydantic>=2.8.0",
+    "python-hcl2>=8.1.0",
+    "markdown-it-py>=3.0.0",
+    "pyyaml>=6.0.1",
+    "click>=8.0.0",
+]
+
+[project.scripts]
+ttassistant = "ttassistant.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ttassistant"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/ttassistant",
+    "/common_standards",
+    "/tests",
+    "/pyproject.toml",
+    "/README.md",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+

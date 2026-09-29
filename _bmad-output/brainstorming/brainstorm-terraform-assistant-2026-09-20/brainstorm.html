@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brainstorm Keepsake: Terraform Smart Assistant</title>
+  <style>
+    :root {
+      --bg-base: #07090e;
+      --bg-surface: #0e131f;
+      --bg-card: #131b2e;
+      --bg-card-hover: #18223a;
+      --border-dim: #1d2840;
+      --border-glow: #2b3d63;
+      --accent-cyan: #00f0ff;
+      --accent-emerald: #00ffaa;
+      --accent-purple: #b05cff;
+      --accent-amber: #ffb703;
+      --accent-rose: #ff2a6d;
+      --accent-crimson: #ff3366;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --user-glow: 0 0 12px rgba(0, 240, 255, 0.4);
+      --coach-glow: 0 0 12px rgba(176, 92, 255, 0.4);
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Monaco, Consolas, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(176, 92, 255, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(0, 255, 170, 0.04) 0%, transparent 50%),
+        linear-gradient(to bottom, transparent, rgba(7, 9, 14, 0.8)),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Top Utility / Terminal Bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-dim);
+      padding: 12px 24px;
+      margin-bottom: 40px;
+    }
+
+    .top-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ff5f56; box-shadow: 0 0 6px #ff5f5688; }
+    .dot-yellow { background: #ffbd2e; box-shadow: 0 0 6px #ffbd2e88; }
+    .dot-green { background: #27c93f; box-shadow: 0 0 6px #27c93f88; }
+
+    .file-path {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .file-path span {
+      color: var(--accent-cyan);
+    }
+
+    .meta-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge-status {
+      background: rgba(0, 255, 170, 0.12);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(0, 255, 170, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-status::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 6px var(--accent-emerald);
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 40px 0 60px;
+      position: relative;
+    }
+
+    .hero-badge {
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: var(--accent-cyan);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+      letter-spacing: 0.05em;
+    }
+
+    .hero-title {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 30px;
+      line-height: 1.7;
+    }
+
+    /* Interactive Stats / Filter Strip */
+    .filter-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-glow);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    .filter-btn.active {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+    }
+
+    .filter-btn.active.filter-user {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .filter-btn.active.filter-coach {
+      background: rgba(176, 92, 255, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+      box-shadow: 0 0 16px rgba(176, 92, 255, 0.15);
+    }
+
+    /* Badges */
+    .badge-actor {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .badge-user {
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+    }
+    .badge-user::before {
+      content: "◆";
+      font-size: 0.65rem;
+    }
+
+    .badge-coach {
+      background: rgba(176, 92, 255, 0.14);
+      color: var(--accent-purple);
+      border: 1px solid rgba(176, 92, 255, 0.4);
+    }
+    .badge-coach::before {
+      content: "◈";
+      font-size: 0.65rem;
+    }
+
+    /* Section Container */
+    .technique-section {
+      margin-bottom: 70px;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 16px;
+      margin-bottom: 28px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .section-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* TECHNIQUE 1: JOB TO BE DONE (Blueprint Aesthetic) */
+    .jtbd-section .section-num { color: var(--accent-cyan); }
+    .jtbd-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .blueprint-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      border-radius: 10px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .blueprint-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent-cyan);
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .blueprint-card:hover {
+      background: var(--bg-card);
+      border-color: rgba(0, 240, 255, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(0, 240, 255, 0.08);
+    }
+    .blueprint-card:hover::before {
+      opacity: 1;
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .card-meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px dashed var(--border-dim);
+      padding-top: 10px;
+    }
+
+    .blueprint-pattern {
+      position: absolute;
+      right: 12px;
+      bottom: 8px;
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      color: rgba(255, 255, 255, 0.015);
+      user-select: none;
+      pointer-events: none;
+      font-weight: 900;
+    }
+
+    /* TECHNIQUE 2: WORST POSSIBLE IDEA (Hazard & Inversion Flip Grid) */
+    .worst-section .section-num { color: var(--accent-rose); }
+    
+    .hazard-pairs {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .hazard-pair {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr;
+      align-items: stretch;
+      gap: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-dim);
+      background: var(--bg-surface);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .hazard-pair:hover {
+      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+      border-color: var(--border-glow);
+    }
+
+    .nightmare-side {
+      background: linear-gradient(135deg, rgba(255, 42, 109, 0.08) 0%, rgba(20, 10, 18, 0.6) 100%);
+      padding: 24px;
+      position: relative;
+      border-right: 1px dashed rgba(255, 42, 109, 0.3);
+    }
+
+    .nightmare-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-rose);
+      background: rgba(255, 42, 109, 0.15);
+      border: 1px solid rgba(255, 42, 109, 0.35);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .flip-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      position: relative;
+    }
+
+    .flip-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--bg-base);
+      border: 1px solid var(--accent-emerald);
+      color: var(--accent-emerald);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      box-shadow: 0 0 12px rgba(0, 255, 170, 0.3);
+      z-index: 2;
+    }
+
+    .shield-side {
+      background: linear-gradient(135deg, rgba(0, 255, 170, 0.06) 0%, rgba(10, 25, 20, 0.6) 100%);
+      padding: 24px;
+      position: relative;
+    }
+
+    .shield-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent-emerald);
+      background: rgba(0, 255, 170, 0.15);
+      border: 1px solid rgba(0, 255, 170, 0.35);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .pair-text {
+      font-size: 1rem;
+      color: var(--text-main);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .pair-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* TECHNIQUE 3: ONE FEATURE ONLY (Singular Monolith / Radar) */
+    .one-feature-section .section-num { color: var(--accent-purple); }
+
+    .monolith-card {
+      background: radial-gradient(circle at top right, rgba(176, 92, 255, 0.15), transparent 60%),
+                  linear-gradient(180deg, #161228 0%, #0c0b16 100%);
+      border: 1px solid rgba(176, 92, 255, 0.4);
+      border-radius: 16px;
+      padding: 36px;
+      position: relative;
+      box-shadow: 0 20px 40px -15px rgba(176, 92, 255, 0.2);
+    }
+
+    .monolith-inner {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .monolith-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-purple);
+      background: rgba(176, 92, 255, 0.2);
+      border: 1px solid rgba(176, 92, 255, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .monolith-headline {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    .monolith-headline span {
+      color: var(--accent-purple);
+      text-shadow: 0 0 16px rgba(176, 92, 255, 0.5);
+    }
+
+    .monolith-body {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .monolith-evolution {
+      background: rgba(10, 8, 20, 0.7);
+      border: 1px solid rgba(176, 92, 255, 0.25);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .evo-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-purple);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .evo-desc {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .code-preview {
+      background: #080710;
+      border: 1px solid #201a35;
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    .code-preview .keyword { color: var(--accent-purple); }
+    .code-preview .string { color: var(--accent-emerald); }
+    .code-preview .comment { color: var(--text-dim); }
+
+    /* TECHNIQUE 4: ROLE PLAYING (Platform Lead Dossier) */
+    .role-section .section-num { color: var(--accent-amber); }
+
+    .role-dossier {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dim);
+      border-radius: 14px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .dossier-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 18px;
+    }
+
+    .role-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      background: rgba(255, 183, 3, 0.15);
+      border: 1px solid var(--accent-amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--accent-amber);
+      box-shadow: 0 0 16px rgba(255, 183, 3, 0.2);
+    }
+
+    .role-info h3 {
+      font-size: 1.25rem;
+      color: #fff;
+    }
+    .role-info p {
+      color: var(--accent-amber);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .role-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .role-card {
+      border-radius: 10px;
+      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card.type-rule {
+      border-left: 4px solid var(--accent-cyan);
+    }
+    .role-card.type-celebration {
+      border-left: 4px solid var(--accent-emerald);
+    }
+    .role-card.type-redline {
+      border-left: 4px solid var(--accent-crimson);
+    }
+
+    .role-card-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+    }
+
+    .type-rule .role-card-label { color: var(--accent-cyan); }
+    .type-celebration .role-card-label { color: var(--accent-emerald); }
+    .type-redline .role-card-label { color: var(--accent-crimson); }
+
+    .role-card-content {
+      font-size: 0.98rem;
+      color: var(--text-main);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    /* THE CLIMAX: SCOPE & SYNTHESIS */
+    .climax-section {
+      margin-top: 80px;
+      position: relative;
+    }
+
+    .climax-wrapper {
+      background: linear-gradient(180deg, #0f172a 0%, #070a13 100%);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 20px;
+      padding: 44px;
+      position: relative;
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), inset 0 0 40px rgba(0, 240, 255, 0.05);
+      overflow: hidden;
+    }
+
+    .climax-wrapper::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: 15%;
+      right: 15%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-purple), transparent);
+    }
+
+    .scope-pivot-box {
+      background: rgba(255, 42, 109, 0.08);
+      border: 1px solid rgba(255, 42, 109, 0.3);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .scope-pivot-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .scope-pivot-header {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-rose);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .scope-pivot-decision {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .scope-pivot-reason {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .synthesis-terminal {
+      background: #080c16;
+      border: 1px solid var(--border-dim);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 36px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .term-header {
+      background: #0e1424;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-dim);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .term-body {
+      padding: 28px;
+    }
+
+    .synthesis-quote {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      border-left: 3px solid var(--accent-cyan);
+      padding-left: 20px;
+    }
+
+    .synthesis-quote span {
+      color: var(--accent-cyan);
+    }
+
+    .mvp-pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .pillar-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-dim);
+      border-radius: 8px;
+      padding: 18px;
+      transition: all 0.2s;
+    }
+    .pillar-card:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.03);
+    }
+
+    .pillar-title {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pillar-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Utility hidden class for filters */
+    .idea-hidden {
+      display: none !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 840px) {
+      .hazard-pair {
+        grid-template-columns: 1fr;
+      }
+      .flip-connector {
+        padding: 8px 0;
+      }
+      .nightmare-side {
+        border-right: none;
+        border-bottom: 1px dashed rgba(255, 42, 109, 0.3);
+      }
+      .monolith-inner {
+        grid-template-columns: 1fr;
+      }
+      .hero-title {
+        font-size: 2.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Terminal Status Bar -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="terminal-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="file-path">session://<span>brainstorm-terraform-assistant</span>.tf</span>
+      </div>
+      <div class="meta-badges">
+        <span class="badge-status">Status: Complete</span>
+        <span style="color: var(--text-dim);">2026-09-20T17:29</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span>⚡ BMAD BRAINSTORMING ARTIFACT</span>
+      </div>
+      <h1 class="hero-title">Smart Code Assistant for <span class="highlight">Terraform</span></h1>
+      <p class="hero-desc">
+        A strategic ideation journey exploring how a developer-centric CLI assistant can deliver high-quality, ultra-safe, and standardized Terraform infrastructure at high speed.
+      </p>
+
+      <!-- Interactive Filter Controls -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all', this)">
+          <span>⚡ All Insights</span> <span style="opacity: 0.6;">(17)</span>
+        </button>
+        <button class="filter-btn filter-user" onclick="setFilter('user', this)">
+          <span class="badge-actor badge-user">User Ideas</span> <span style="opacity: 0.6;">(11)</span>
+        </button>
+        <button class="filter-btn filter-coach" onclick="setFilter('coach', this)">
+          <span class="badge-actor badge-coach">Coach Inventions</span> <span style="opacity: 0.6;">(6)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TECHNIQUE 1: JOB TO BE DONE -->
+    <section class="technique-section jtbd-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-num">Technique 01 // Blueprint</span>
+          <h2 class="section-title">Job to Be Done: Foundation & Standards</h2>
+          <p class="section-desc">Establishing the developer ergonomics, repository intelligence, and baseline rules of engagement.</p>
+        </div>
+        <span class="badge-actor badge-user" style="align-self: center;">5 User / 2 Coach</span>
+      </div>
+
+      <div class="jtbd-grid">
+        <!-- Card 1 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#01</span>
+            </div>
+            <h3 class="card-title">Enforce naming standards and conventions across all Terraform resources</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: Consistency & Hygiene</span>
+            <span>Target: AST / Linter</span>
+          </div>
+          <div class="blueprint-pattern">NAME</div>
+        </div>
+
+        <!-- Card 2 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#02</span>
+            </div>
+            <h3 class="card-title">Standardize and automate Terraform backend configurations</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: State Management</span>
+            <span>Target: Remote Backend</span>
+          </div>
+          <div class="blueprint-pattern">BACKEND</div>
+        </div>
+
+        <!-- Card 3 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#03</span>
+            </div>
+            <h3 class="card-title">Ensure private endpoint integration by default for resources where possible</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: Zero Trust & Security</span>
+            <span>Target: Network Topology</span>
+          </div>
+          <div class="blueprint-pattern">P-END</div>
+        </div>
+
+        <!-- Card 4 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#04</span>
+            </div>
+            <h3 class="card-title">Infer patterns and conventions from existing repository scripts to guide new scripts</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: Contextual Learning</span>
+            <span>Target: Local Repo Codebase</span>
+          </div>
+          <div class="blueprint-pattern">LEARN</div>
+        </div>
+
+        <!-- Card 5 (Coach) -->
+        <div class="blueprint-card" data-origin="coach" style="border-color: rgba(176, 92, 255, 0.35);">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-coach">Coach</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-purple);">#05</span>
+            </div>
+            <h3 class="card-title"><strong>Repository Archaeologist:</strong> scan existing repos to build a dynamic company styleguide that enforces proven naming and networking patterns</h3>
+          </div>
+          <div class="card-meta">
+            <span style="color: var(--accent-purple);">Synthesis Concept</span>
+            <span>Archaeology Engine</span>
+          </div>
+          <div class="blueprint-pattern">ARCH</div>
+        </div>
+
+        <!-- Card 6 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#06</span>
+            </div>
+            <h3 class="card-title">Provide gold standards as Markdown specification files that the assistant uses as ground truth rules</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: Deterministic Truth</span>
+            <span>Target: docs/standards/*.md</span>
+          </div>
+          <div class="blueprint-pattern">GOLD.MD</div>
+        </div>
+
+        <!-- Card 7 (Coach) -->
+        <div class="blueprint-card" data-origin="coach" style="border-color: rgba(176, 92, 255, 0.35);">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-coach">Coach</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-purple);">#07</span>
+            </div>
+            <h3 class="card-title"><strong>Standard Drift Detector:</strong> compare both new and legacy scripts against gold standard MD files and propose automated upgrades</h3>
+          </div>
+          <div class="card-meta">
+            <span style="color: var(--accent-purple);">Synthesis Concept</span>
+            <span>Drift & Migration</span>
+          </div>
+          <div class="blueprint-pattern">DRIFT</div>
+        </div>
+
+        <!-- Card 8 (User) -->
+        <div class="blueprint-card" data-origin="user">
+          <div>
+            <div class="card-top">
+              <span class="badge-actor badge-user">User</span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">#08</span>
+            </div>
+            <h3 class="card-title">Deliver as an interactive CLI interface where developers interact conversationally with the assistant</h3>
+          </div>
+          <div class="card-meta">
+            <span>Focus: Developer Experience</span>
+            <span>Interface: Interactive CLI</span>
+          </div>
+          <div class="blueprint-pattern">CLI</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNIQUE 2: WORST POSSIBLE IDEA -->
+    <section class="technique-section worst-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-num">Technique 02 // Inversion</span>
+          <h2 class="section-title">Worst Possible Idea: Nightmares & Inverted Shields</h2>
+          <p class="section-desc">Imagining the ultimate catastrophic failures, then flipping each into a formidable protective mechanism.</p>
+        </div>
+        <span class="badge-actor" style="background: rgba(255,42,109,0.15); color: var(--accent-rose); border: 1px solid rgba(255,42,109,0.3);">Hazard to Shield Inversion</span>
+      </div>
+
+      <div class="hazard-pairs">
+        <!-- Pair 1 -->
+        <div class="hazard-pair">
+          <div class="nightmare-side" data-origin="coach">
+            <div class="nightmare-badge">⚠️ The Nightmare (Coach)</div>
+            <p class="pair-text">Assistant silently bypasses security (0.0.0.0/0) and auto-runs <code>terraform apply</code> to resolve errors without confirmation.</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-coach">Coach Idea</span>
+              <span style="font-size: 0.75rem; color: var(--accent-rose); font-family: var(--font-mono);">Severity: Catastrophic</span>
+            </div>
+          </div>
+          <div class="flip-connector">
+            <div class="flip-icon">⇄</div>
+          </div>
+          <div class="shield-side" data-origin="coach">
+            <div class="shield-badge">🛡️ Inverted Shield (Coach)</div>
+            <p class="pair-text"><strong>Blast Radius Analyzer:</strong> Detects forced resource replacement (recreation) and screams red alerts on critical resources before any execution.</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-coach">Coach Flip</span>
+              <span style="font-size: 0.75rem; color: var(--accent-emerald); font-family: var(--font-mono);">Shield: Impact Detection</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pair 2 -->
+        <div class="hazard-pair">
+          <div class="nightmare-side" data-origin="user">
+            <div class="nightmare-badge">⚠️ The Nightmare (User)</div>
+            <p class="pair-text">Assistant modifies existing resource configurations causing accidental destruction/recreation of critical infrastructure (e.g. AKS clusters).</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-user">User Idea</span>
+              <span style="font-size: 0.75rem; color: var(--accent-rose); font-family: var(--font-mono);">Severity: Outage / Data Loss</span>
+            </div>
+          </div>
+          <div class="flip-connector">
+            <div class="flip-icon">⇄</div>
+          </div>
+          <div class="shield-side" data-origin="coach">
+            <div class="shield-badge">🛡️ Inverted Shield (Coach)</div>
+            <p class="pair-text"><strong>Lifecycle Armor:</strong> Automatic injection and validation of lifecycle <code>prevent_destroy</code> blocks on production and critical stateful assets.</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-coach">Coach Flip</span>
+              <span style="font-size: 0.75rem; color: var(--accent-emerald); font-family: var(--font-mono);">Shield: AST Guard</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pair 3 -->
+        <div class="hazard-pair">
+          <div class="nightmare-side" data-origin="user">
+            <div class="nightmare-badge">⚠️ The Nightmare (User)</div>
+            <p class="pair-text">Assistant fails to analyze subnets and cross-contaminates environments (e.g. provisioning prod resources onto dev/test networks).</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-user">User Idea</span>
+              <span style="font-size: 0.75rem; color: var(--accent-rose); font-family: var(--font-mono);">Severity: Compliance Breach</span>
+            </div>
+          </div>
+          <div class="flip-connector">
+            <div class="flip-icon">⇄</div>
+          </div>
+          <div class="shield-side" data-origin="coach">
+            <div class="shield-badge">🛡️ Inverted Shield (Coach)</div>
+            <p class="pair-text"><strong>Network Topology & Boundary Validator:</strong> Enforces strict CIDR and subnet isolation between dev, test, and prod across all generated configs.</p>
+            <div class="pair-meta">
+              <span class="badge-actor badge-coach">Coach Flip</span>
+              <span style="font-size: 0.75rem; color: var(--accent-emerald); font-family: var(--font-mono);">Shield: Boundary Firewall</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNIQUE 3: ONE FEATURE ONLY -->
+    <section class="technique-section one-feature-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-num">Technique 03 // Singular Focus</span>
+          <h2 class="section-title">One Feature Only: The Core Pillar</h2>
+          <p class="section-desc">Distilling the entire concept down to a singular, uncompromised capability.</p>
+        </div>
+        <span class="badge-actor badge-coach">Crucible Analysis</span>
+      </div>
+
+      <div class="monolith-card">
+        <div class="monolith-inner">
+          <div data-origin="user">
+            <div class="monolith-badge">✦ Killer Core Feature Candidate</div>
+            <h3 class="monolith-headline">Absolute <span>prevent_destroy</span> & Infrastructure Loss Prevention</h3>
+            <p class="monolith-body">
+              The user identified the single most vital capability: eliminate any possibility of accidental infrastructure destruction through automated destruction protection and ironclad state guarantees.
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span class="badge-actor badge-user">User Core Feature</span>
+              <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-purple);">Target: 0% Accidental Loss</span>
+            </div>
+          </div>
+
+          <div class="monolith-evolution" data-origin="coach">
+            <div class="evo-title">◈ Coach Technical Evolution</div>
+            <p class="evo-desc">
+              <strong>Pre-flight Destruction Interceptor:</strong> Parse terraform plan and AST for forces replacement or destroy actions, combined with policy-as-code preventing removal of <code>prevent_destroy</code>.
+            </p>
+            <div class="code-preview">
+<span class="keyword">lifecycle</span> {
+  <span class="keyword">prevent_destroy</span> = <span class="keyword">true</span> <span class="comment"># Intercepted & Enforced</span>
+}
+<span class="comment"># AST check: rejects plan if action == "replace"</span></div>
+            <div style="margin-top: 12px;">
+              <span class="badge-actor badge-coach">Coach Architecture</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNIQUE 4: ROLE PLAYING -->
+    <section class="technique-section role-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-num">Technique 04 // Persona Lens</span>
+          <h2 class="section-title">Role Playing: The Platform Lead Lens</h2>
+          <p class="section-desc">Pressure-testing the assistant against the uncompromising standards of an Enterprise Platform & SRE Lead.</p>
+        </div>
+        <span class="badge-actor badge-user">3 Platform Directives</span>
+      </div>
+
+      <div class="role-dossier">
+        <div class="dossier-header">
+          <div class="role-avatar">🛡️</div>
+          <div class="role-info">
+            <h3>Persona: Enterprise Platform Lead</h3>
+            <p>Guardian of Production Uptime & Architecture Standards</p>
+          </div>
+        </div>
+
+        <div class="role-cards-grid">
+          <!-- Card 1: The Rule -->
+          <div class="role-card type-rule" data-origin="user">
+            <div>
+              <div class="role-card-label">
+                <span>⚡ The Ironclad Rule</span>
+              </div>
+              <p class="role-card-content">
+                CLI can suggest improvements for existing scripts, but must <strong>NEVER directly edit existing files without explicit human confirmation</strong>.
+              </p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-actor badge-user">User Directive</span>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-cyan);">Guardrail</span>
+            </div>
+          </div>
+
+          <!-- Card 2: The Celebration -->
+          <div class="role-card type-celebration" data-origin="user">
+            <div>
+              <div class="role-card-label">
+                <span>🎉 The Celebration (Instant Win)</span>
+              </div>
+              <p class="role-card-content">
+                <strong>Automatic detection and correct wiring of private endpoint integrations</strong> for all supporting cloud resources without manual plumbing.
+              </p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-actor badge-user">User Directive</span>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-emerald);">High Delight</span>
+            </div>
+          </div>
+
+          <!-- Card 3: The Red Line -->
+          <div class="role-card type-redline" data-origin="user">
+            <div>
+              <div class="role-card-label">
+                <span>🛑 The Absolute Red Line</span>
+              </div>
+              <p class="role-card-content">
+                Assistant must <strong>NEVER automatically execute <code>terraform apply</code></strong>. Execution remains strictly and permanently human-in-the-loop.
+              </p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-actor badge-user">User Directive</span>
+              <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-crimson);">Non-Negotiable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE CLIMAX: SCOPE DECISION & FINAL SYNTHESIS -->
+    <section class="climax-section">
+      <div class="climax-wrapper">
+        <!-- Strategic Scope Decision -->
+        <div class="scope-pivot-box">
+          <div class="scope-pivot-icon">⚡</div>
+          <div>
+            <div class="scope-pivot-header">Strategic Scope Decision // User Pivot</div>
+            <div class="scope-pivot-decision">Remove Destruction Protection from Core MVP Scope</div>
+            <div class="scope-pivot-reason">
+              A deliberate, pragmatic choice: to keep the assistant lean, nimble, and laser-focused on conversational authoring and conformance, deep state manipulation and destruction protection were decoupled from the initial release.
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal Output of the Final Synthesis -->
+        <div class="synthesis-terminal">
+          <div class="term-header">
+            <span>TERMINAL // FINAL_SYNTHESIS.HCL</span>
+            <span>STATUS: FROZEN & ALIGNED</span>
+          </div>
+          <div class="term-body">
+            <div class="synthesis-quote">
+              “CLI assistant focused on <span>conversational script generation</span>, adhering to <span>Markdown gold standards</span>, auto-wiring <span>private endpoints</span>, enforcing <span>subnet boundaries</span>, with suggestion-only on existing files and <span>zero auto-apply</span>.”
+            </div>
+
+            <!-- The 4 Core Pillars of the MVP -->
+            <div class="mvp-pillars-grid">
+              <div class="pillar-card">
+                <div class="pillar-title">01 / Conversational CLI</div>
+                <div class="pillar-desc">Interactive terminal workflow enabling engineers to prompt, iterate, and refine Terraform HCL organically.</div>
+              </div>
+
+              <div class="pillar-card">
+                <div class="pillar-title">02 / Markdown Gold Specs</div>
+                <div class="pillar-desc">Uses repo Markdown specification files as ground-truth rules for naming conventions and resource topology.</div>
+              </div>
+
+              <div class="pillar-card">
+                <div class="pillar-title">03 / Private Endpoint Wiring</div>
+                <div class="pillar-desc">Automatically provisions and connects private endpoints for all supported infrastructure resources by default.</div>
+              </div>
+
+              <div class="pillar-card">
+                <div class="pillar-title">04 / Subnet Boundary Guard</div>
+                <div class="pillar-desc">Strict CIDR & subnet isolation preventing environmental cross-contamination (dev/test/prod).</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guardrail Summary Banner -->
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); padding: 8px 16px; border-radius: 6px; color: var(--accent-cyan);">
+            ✔ Suggestion-Only Mode for Existing Files
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; background: rgba(255, 51, 102, 0.08); border: 1px solid rgba(255, 51, 102, 0.25); padding: 8px 16px; border-radius: 6px; color: var(--accent-crimson);">
+            ⛔ Zero Automatic <code>terraform apply</code>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; background: rgba(0, 255, 170, 0.08); border: 1px solid rgba(0, 255, 170, 0.25); padding: 8px 16px; border-radius: 6px; color: var(--accent-emerald);">
+            ✔ 100% Human-in-the-Loop Execution
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div>BMAD BRAINSTORMING KEEPSAKE • GENERATED FOR TTASSISTANT</div>
+      <div>Source: <code>brainstorm-terraform-assistant-2026-09-20/.memlog.md</code></div>
+    </footer>
+  </div>
+
+  <script>
+    function setFilter(type, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const items = document.querySelectorAll('[data-origin]');
+      items.forEach(item => {
+        const origin = item.getAttribute('data-origin');
+        if (type === 'all') {
+          item.classList.remove('idea-hidden');
+        } else if (origin === type) {
+          item.classList.remove('idea-hidden');
+        } else {
+          item.classList.add('idea-hidden');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
